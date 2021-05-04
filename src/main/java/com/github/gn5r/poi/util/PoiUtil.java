@@ -4,12 +4,14 @@ import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
 import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.compress.utils.Lists;
 import org.apache.poi.ss.usermodel.CellStyle;
 import org.apache.poi.ss.usermodel.Name;
 import org.apache.poi.ss.usermodel.Row;
@@ -26,8 +28,6 @@ import com.github.gn5r.poi.util.exception.PoiNoAnnotatedException;
 import com.github.gn5r.poi.util.logger.PoiUtilLogger;
 import com.github.gn5r.poi.util.message.Message;
 import com.github.gn5r.poi.util.message.MessageUtil;
-import com.google.common.collect.Lists;
-import com.google.common.collect.Sets;
 
 /**
  *
@@ -38,7 +38,7 @@ public class PoiUtil {
 	public static RowData getRowData(Workbook workbook, Sheet worksheet, Object source)
 			throws IllegalArgumentException, IllegalAccessException {
 		RowData rowData = new RowData();
-		Set<CellData> cells = Sets.newHashSet();
+		Set<CellData> cells = new HashSet<>();
 
 		List<Field> fields = Arrays.asList(source.getClass().getDeclaredFields());
 		if (isEmptyAnnotation(fields, Cell.class)) {
@@ -64,7 +64,7 @@ public class PoiUtil {
 
 	public static List<RowData> getRowDatas(Workbook workbook, Sheet worksheet, Object source)
 			throws IllegalArgumentException, IllegalAccessException {
-		List<RowData> rowDatas = Lists.newArrayList();
+		List<RowData> rowDatas = new ArrayList<>();
 
 		List<Field> fields = Arrays.asList(source.getClass().getDeclaredFields());
 		if (isEmptyAnnotation(fields, Cell.class)) {
@@ -103,7 +103,7 @@ public class PoiUtil {
 
 	public static List<RowData> getRowDatas(Workbook workbook, Sheet worksheet, List<?> list)
 			throws IllegalArgumentException, IllegalAccessException {
-		List<RowData> rowDatas = Lists.newArrayList();
+		List<RowData> rowDatas = new ArrayList<>();
 
 		PoiUtilLogger.debug(MessageUtil.getMessage(Message.POI0005, "list", list.getClass()));
 
@@ -127,7 +127,7 @@ public class PoiUtil {
 
 	public static <T> boolean isEmptyAnnotation(List<Field> fields, T annotationClass) {
 		List<Annotation[]> list = fields.stream().map(Field::getAnnotations).distinct().collect(Collectors.toList());
-		Set<Annotation> annotations = Sets.newHashSet();
+		Set<Annotation> annotations = new HashSet<>();
 
 		for (Annotation[] arr : list) {
 			List<Annotation> annotationList = Arrays.asList(arr).stream()
@@ -306,21 +306,21 @@ public class PoiUtil {
 		RowData rowData = new RowData();
 		List<CellData> cells = getCellDetails(workbook, worksheet, annotation, value);
 
-		if (CollectionUtils.isNotEmpty(cells)) {
+		if (!cells.isEmpty()) {
 			setCells(rowData, cells);
 		}
 		return rowData;
 	}
 
 	private static List<CellData> getCellDetails(Workbook workbook, Sheet worksheet, Cell annotation, Object value) {
-		List<CellData> cells = Lists.newArrayList();
+		List<CellData> cells = new ArrayList<>();
 		Name cellName = getName(workbook, annotation.tags());
 		if (cellName != null) {
 			AreaReference area = new AreaReference(cellName.getRefersToFormula(),
 					workbook.getSpreadsheetVersion());
 			List<CellReference> cellRefs = Arrays.asList(area.getAllReferencedCells());
 
-			if (CollectionUtils.isNotEmpty(cellRefs)) {
+			if (!cellRefs.isEmpty()) {
 				cellRefs.stream().forEach(ref -> {
 					CellData cell = parseToCellData(worksheet, ref, cellName, value);
 					cells.add(cell);
